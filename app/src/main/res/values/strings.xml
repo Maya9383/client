@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">仁心醫院 AI 助手</string>
+
+    <string name="btn_record">🎙️ 點擊說話</string>
+    <string name="status_waiting">[系統] 等待連線\n</string>
+    <string name="status_connected">[系統] 已連線到護理中心\n</string>
+    <string name="error_connection">[錯誤] 連線失敗: %s\n</string>
+    <string name="user_label">\n👤 使用者：</string>
+</resources>
