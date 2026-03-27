@@ -11,6 +11,7 @@ import java.util.Queue;
 
 // AI 語音播放器 //
 public class LlmAudioPlayer {
+    private static final String TAG = "LlmAudioPlayer";
     private final Context context;
     private MediaPlayer mediaPlayer;
     private final Queue<File> audioQueue = new LinkedList<>();
@@ -30,7 +31,7 @@ public class LlmAudioPlayer {
             }
             audioQueue.offer(tempFile);
             if (!isPlaying) playNext();
-        } catch (Exception e) { Log.e("Player", "儲存失敗", e); }
+        } catch (Exception e) { Log.e(TAG, "儲存失敗", e); }
     }
 
     private void playNext() {
@@ -49,10 +50,32 @@ public class LlmAudioPlayer {
             mediaPlayer.prepare();
             mediaPlayer.start();
             mediaPlayer.setOnCompletionListener(mp -> {
-                nextFile.delete();
+                if (nextFile.exists()) nextFile.delete();
                 playNext();
             });
-        } catch (Exception e) { playNext(); }
+        } catch (Exception e) {
+            Log.e(TAG, "播放檔案失敗", e);
+            playNext();
+        }
+    }
+
+    // 🛑 新增功能：暫停語音播放
+    public void pauseAudio() {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            Log.d(TAG, "AI 語音播放暫停");
+        }
+    }
+
+    // 🛑 新增功能：恢復語音播放
+    public void resumeAudio() {
+        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+            mediaPlayer.start();
+            Log.d(TAG, "AI 語音播放恢復");
+        } else if (!isPlaying && !audioQueue.isEmpty()) {
+            // 如果剛好播完上一首被暫停，恢復時直接播下一首
+            playNext();
+        }
     }
 
     public void stopAll() {

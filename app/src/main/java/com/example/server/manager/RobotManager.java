@@ -158,6 +158,7 @@ public class RobotManager {
     }
 
     // --- 通用的 POST 請求工具 ---
+// --- 修改 RobotManager.java 的 postRequest ---
     private void postRequest(String path, String key, String value, Runnable onSuccess) {
         try {
             JSONObject json = new JSONObject();
@@ -170,13 +171,20 @@ public class RobotManager {
             httpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    Log.e(TAG, "請求失敗: " + path);
+                    Log.e(TAG, "請求失敗: " + path, e);
+                    // ★ 新增：網路失敗時在畫面上顯示提示
+                    activity.runOnUiThread(() -> android.widget.Toast.makeText(activity, "網路連線失敗，請檢查伺服器 IP", android.widget.Toast.LENGTH_SHORT).show());
                 }
 
                 @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response) {
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                     if (response.isSuccessful() && onSuccess != null) {
                         activity.runOnUiThread(onSuccess);
+                    } else {
+                        // ★ 新增：伺服器報錯時在畫面上顯示提示
+                        String errorMsg = response.body() != null ? response.body().string() : "未知錯誤";
+                        Log.e(TAG, "API 伺服器錯誤: " + response.code() + " - " + errorMsg);
+                        activity.runOnUiThread(() -> android.widget.Toast.makeText(activity, "操作失敗，伺服器回傳錯誤代碼: " + response.code(), android.widget.Toast.LENGTH_LONG).show());
                     }
                 }
             });

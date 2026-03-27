@@ -2,38 +2,47 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E3F2FD">
+    android:background="#F0F8FF"
+    android:padding="30dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:orientation="vertical"
         android:gravity="center"
-        android:orientation="vertical">
+        android:layout_centerInParent="true">
 
         <ProgressBar
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="24dp" />
+            android:id="@+id/progressBarRunning"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:indeterminate="true"
+            android:indeterminateTint="#005C8A"
+            android:layout_marginBottom="40dp" />
 
         <TextView
             android:id="@+id/tvRunningStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="車子運行中..."
-            android:textColor="#333333"
-            android:textSize="28sp"
+            android:text="機器人前往中..."
+            android:textColor="#005C8A"
+            android:textSize="48sp"
             android:textStyle="bold"
-            android:layout_marginBottom="32dp" />
-
-        <Button
-            android:id="@+id/btnCancelMission"
-            android:layout_width="180dp"
-            android:layout_height="56dp"
-            android:text="取消當前任務"
-            android:backgroundTint="#D9534F"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:elevation="4dp" />
+            android:gravity="center" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnCancelMission"
+        android:layout_width="400dp"
+        android:layout_height="110dp"
+        android:text="🛑 取消任務"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:backgroundTint="#FF3B30"
+        android:textColor="#FFFFFF"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dp" />
+
 </RelativeLayout>
