@@ -1,189 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="3"
-    android:background="#f4f7f6">
+    android:background="#f4f7f6"
+    android:padding="20dp">
 
-    <ViewFlipper
-        android:id="@+id/viewFlipper"
+    <TextView
+        android:id="@+id/btnBackFromControl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="〈 返回首頁"
+        android:padding="10dp"
+        android:textColor="#888888"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/tvCountdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:text="30s 後自動返航"
+        android:textColor="#FF7043"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_centerInParent="true"
+        android:weightSum="2">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="10dp">
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.8"
+        android:orientation="vertical"
+        android:padding="10dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="任務選擇" android:textSize="18sp" android:textStyle="bold" android:layout_gravity="center" android:layout_marginBottom="20dp"/>
+        <Button android:id="@+id/btnCharge" android:layout_width="match_parent" android:layout_height="60dp" android:text="🔋 返回充電" android:backgroundTint="#2196F3"/>
+    </LinearLayout>
 
-            <VideoView
-                android:id="@+id/videoView"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="#000000" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="10dp"
-                android:weightSum="3">
-
-                <Button
-                    android:id="@+id/btnTrainingVideo"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="10dp"
-                    android:text="衛教影片" />
-
-                <Button
-                    android:id="@+id/btnStartChat"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="10dp"
-                    android:text="開始對話" />
-
-                <Button
-                    android:id="@+id/btnControl"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="控車" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="10dp">
-            <Button
-                android:id="@+id/btnBackFromControl"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="返回" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="控車設定"
-                android:textSize="18sp"
-                android:layout_centerHorizontal="true"
-                android:textStyle="bold" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_centerInParent="true"
-                android:weightSum="2">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="任務種類" android:layout_marginBottom="5dp"/>
-                    <Button android:id="@+id/btnCharge" android:layout_width="120dp" android:layout_height="wrap_content" android:text="充電" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="車子停靠點" android:layout_marginBottom="5dp"/>
-                    <Button android:id="@+id/btnDestWashroom" android:layout_width="120dp" android:layout_height="wrap_content" android:text="洗手間" />
-                    <Button android:id="@+id/btnDestLobby" android:layout_width="120dp" android:layout_height="wrap_content" android:text="大廳" />
-                    <Button android:id="@+id/btnDestStandby" android:layout_width="120dp" android:layout_height="wrap_content" android:text="待機點" />
-                </LinearLayout>
-            </LinearLayout>
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="10dp">
-            <Button
-                android:id="@+id/btnBackFromChat"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="返回" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="慈濟醫院助手"
-                android:textSize="18sp"
-                android:layout_centerHorizontal="true" />
-            <TextView
-                android:id="@+id/tvChatLog"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/chatInputLayout"
-                android:layout_below="@+id/btnBackFromChat"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="#eef2f5"
-                android:padding="10dp"
-                android:scrollbars="vertical" />
-            <LinearLayout
-                android:id="@+id/chatInputLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:orientation="horizontal">
-                <EditText
-                    android:id="@+id/etChatInput"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="輸入訊息..." />
-                <Button
-                    android:id="@+id/btnSendChat"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="發送" />
-            </LinearLayout>
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#DDDDDD"
-            android:padding="15dp">
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_above="@+id/btnCancelMission"
-                android:layout_marginBottom="10dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="車子運行中..."
-                    android:textSize="24sp"
-                    android:layout_gravity="center" />
-            </androidx.cardview.widget.CardView>
-            <Button
-                android:id="@+id/btnCancelMission"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:backgroundTint="#d9534f"
-                android:text="取消" />
-        </RelativeLayout>
-
-    </ViewFlipper>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
-        android:background="#f4f7f6" />
-
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.2"
+        android:orientation="vertical"
+        android:padding="10dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="前往地點" android:textSize="18sp" android:textStyle="bold" android:layout_gravity="center" android:layout_marginBottom="20dp"/>
+        <Button android:id="@+id/btnDestLobby" android:layout_width="match_parent" android:layout_height="50dp" android:text="大廳" android:layout_marginBottom="10dp" android:backgroundTint="#FFFFFF" android:textColor="#333333"/>
+        <Button android:id="@+id/btnDestWashroom" android:layout_width="match_parent" android:layout_height="50dp" android:text="洗手間" android:layout_marginBottom="10dp" android:backgroundTint="#FFFFFF" android:textColor="#333333"/>
+        <Button android:id="@+id/btnDestStandby" android:layout_width="match_parent" android:layout_height="50dp" android:text="待機點" android:backgroundTint="#FFFFFF" android:textColor="#333333"/>
+    </LinearLayout>
 </LinearLayout>
+</RelativeLayout>

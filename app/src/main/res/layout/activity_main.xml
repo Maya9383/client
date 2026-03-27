@@ -1,77 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/viewFlipper"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="3"
-    android:background="#f4f7f6">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#E3F2FD"
-        android:padding="16dp">
+    <include layout="@layout/layout_video" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+    <include layout="@layout/layout_control" />
 
-            <VideoView
-                android:id="@+id/videoView"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="#000000" />
+    <include layout="@layout/layout_chat" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:weightSum="3">
+    <include layout="@layout/layout_running" />
 
-                <Button
-                    android:id="@+id/btnTrainingVideo"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:text="衛教影片"
-                    android:textSize="12sp"
-                    android:elevation="4dp"/>
+    <include layout="@layout/layout_returning" />
 
-                <Button
-                    android:id="@+id/btnStartChat"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:text="開始對話"
-                    android:textSize="12sp"
-                    android:elevation="4dp"/>
-
-                <Button
-                    android:id="@+id/btnControl"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
-                    android:layout_weight="1"
-                    android:text="控車"
-                    android:textSize="12sp"
-                    android:elevation="4dp"/>
-            </LinearLayout>
-        </LinearLayout>
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
-        android:background="#00000000" />
-
-</LinearLayout>
+</ViewFlipper>
