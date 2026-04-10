@@ -2,4 +2,39 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="md_theme_primary">#006C9B</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+    <color name="md_theme_primaryContainer">#D0E4FF</color>
+    <color name="md_theme_onPrimaryContainer">#001D34</color>
+
+    <color name="md_theme_error">#BA1A1A</color>
+    <color name="md_theme_onError">#FFFFFF</color>
+    <color name="md_theme_errorContainer">#FFDAD6</color>
+    <color name="md_theme_onErrorContainer">#410002</color>
+
+    <color name="md_theme_background">#F5FAFD</color>
+    <color name="md_theme_onBackground">#171C1F</color>
+    <color name="md_theme_surface">#FFFFFF</color>
+    <color name="md_theme_onSurface">#171C1F</color>
+    <color name="md_theme_surfaceVariant">#DFE3EB</color>
+    <color name="md_theme_onSurfaceVariant">#43474E</color>
+
+    <color name="chat_background_overlay">#F5F5F5</color>
+    <color name="pause_overlay_bg">#E64A5C6A</color>
+    <color name="video_bottom_bar_bg">#99171C1F</color>
+
+    <color name="chat_text_primary">#333333</color>
+    <color name="chat_text_secondary">#666666</color>
+
+    <color name="tech_deep_blue">#0D47A1</color>
+    <color name="tech_mid_blue">#1976D2</color>
+    <color name="tech_edge_blue">#1A006C9B</color>
+
+    <color name="m3_pause_icon_tint">#D2E3FC</color>
+    <color name="m3_pause_text_primary">#F8FAFC</color>
+    <color name="m3_pause_text_secondary">#B8CADA</color>
+
+    <color name="theme_card_accent_blue">#708D9C</color>
+    <color name="theme_card_accent_green">#829B82</color>
 </resources>

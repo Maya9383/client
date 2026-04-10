@@ -1,9 +1,37 @@
 <resources>
-    <string name="app_name">仁心醫院 AI 助手</string>
+    <string name="app_name">慈濟醫院 AI 助手</string>
 
+    <string name="btn_back_home">〈 返回首頁</string>
+    <string name="btn_back">〈 返回首頁</string>
+
+    <string name="control_countdown">30s 後自動返航</string>
+    <string name="control_title">請選擇機器人任務與目的地</string>
+    <string name="control_task_type">任務種類</string>
+    <string name="control_destination">前往目的地</string>
+    <string name="btn_charge">⚡ 充電站</string>
+
+    <string name="btn_dest_lobby">T1</string>
+    <string name="btn_dest_washroom">大廳</string>
+    <string name="btn_dest_standby">T2</string>
+
+    <string name="btn_training_video">衛教影片</string>
+    <string name="btn_start_chat">開始對話</string>
+    <string name="btn_control">控制中心</string>
+
+    <string name="chat_service_title">北慈智能小幫手</string>
     <string name="btn_record">🎙️ 點擊說話</string>
+    <string name="chat_hint">您可以直接對我說話\n或按下方的麥克風進行提問喔！</string>
+
+    <string name="chat_pause_title">對話已暫停</string>
+    <string name="chat_pause_subtitle">輕觸螢幕任意處即可繼續</string>
+
     <string name="status_waiting">[系統] 等待連線\n</string>
     <string name="status_connected">[系統] 已連線到護理中心\n</string>
     <string name="error_connection">[錯誤] 連線失敗: %s\n</string>
     <string name="user_label">\n👤 使用者：</string>
+
+    <string name="running_status">機器人前往中\n請稍候...</string>
+    <string name="btn_cancel_mission">🛑 取消任務</string>
+    <string name="returning_title">正在返回T2...</string>
+    <string name="returning_sub">抵達T2後\n自動跳轉至控車頁面</string>
 </resources>

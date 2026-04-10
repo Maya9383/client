@@ -1,111 +1,183 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chatRootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#CC0F172A">
+    android:background="@color/chat_background_overlay">
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBackFromChat"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="〈 返回"
-        android:textColor="#B3FFFFFF"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:padding="30dp"
+        android:text="@string/btn_back"
+        android:textColor="@color/md_theme_primary"
+        android:textSize="22sp"
+        android:layout_margin="24dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="語音助手服務中"
-        android:textColor="#FFFFFF"
-        android:textSize="32sp"
+        android:text="@string/chat_service_title"
+        android:textColor="@color/chat_text_primary"
+        android:textSize="36sp"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="80dp" />
 
-    <androidx.cardview.widget.CardView
+    <FrameLayout
+        android:id="@+id/layoutVisualizer"
+        android:layout_width="300dp"  android:layout_height="300dp" android:layout_centerInParent="true"
+        android:visibility="invisible">
+
+        <View
+            android:id="@+id/blueWaveSphere"
+            android:layout_width="280dp"  android:layout_height="280dp" android:layout_gravity="center"
+            android:background="@drawable/concentric_blue_wave" />
+
+        <View
+            android:id="@+id/whiteCoreSphere"
+            android:layout_width="140dp"  android:layout_height="140dp" android:layout_gravity="center"
+            android:background="@drawable/concentric_white_core" />
+    </FrameLayout>
+
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardRecord"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        app:cardCornerRadius="60dp"
-        app:cardBackgroundColor="#FF3B30"
-        app:cardElevation="12dp"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
         android:layout_centerInParent="true"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="70dp"
+        app:cardElevation="16dp"
+        app:strokeWidth="0dp"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?attr/selectableItemBackground">
+        android:visibility="gone">
 
-        <Button
+        <ImageView
             android:id="@+id/btnSendChat"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:text="錄音"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF" />
-    </androidx.cardview.widget.CardView>
-
-    <LinearLayout
-        android:id="@+id/layoutVisualizer"
-        android:layout_width="320dp"
-        android:layout_height="120dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_below="@+id/cardRecord"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
-        android:visibility="invisible">
-
-        <View android:id="@+id/vBar1" android:layout_width="14dp" android:layout_height="15dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar2" android:layout_width="14dp" android:layout_height="25dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar3" android:layout_width="14dp" android:layout_height="35dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar4" android:layout_width="14dp" android:layout_height="25dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar5" android:layout_width="18dp" android:layout_height="45dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar6" android:layout_width="14dp" android:layout_height="25dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar7" android:layout_width="14dp" android:layout_height="35dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar8" android:layout_width="14dp" android:layout_height="25dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-        <View android:id="@+id/vBar9" android:layout_width="14dp" android:layout_height="15dp" android:background="@drawable/bar_technology_style" android:layout_margin="5dp" />
-    </LinearLayout>
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_mic"
+            android:scaleType="centerInside"
+            android:padding="35dp"
+            app:tint="@color/md_theme_primary" />
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/txtHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="講完「小美」後稍微停頓\n等待提示音響起後再開始說出您的需求"
-        android:textColor="#94A3B8"
-        android:textSize="24sp"
-        android:lineSpacingExtra="10dp"
+        android:text="@string/chat_hint"
+        android:textColor="@color/chat_text_secondary"
+        android:textSize="18sp"
+        android:lineSpacingExtra="12dp"
         android:gravity="center"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="80dp" />
+        android:layout_marginBottom="160dp" />
+
+    <LinearLayout
+        android:id="@+id/bottomButtonContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="40dp" >
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnBottomMicCard"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginEnd="32dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="45dp"
+            app:strokeWidth="0dp"
+            app:cardElevation="0dp"
+            android:background="@drawable/circle_grey_translucent">
+
+            <ImageView
+                android:id="@+id/btnBottomMic"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_mic"
+                android:scaleType="centerInside"
+                android:padding="16dp"
+                app:tint="@color/chat_text_primary" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnBottomStopCard"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="45dp"
+            app:strokeWidth="0dp"
+            app:cardElevation="0dp"
+            android:background="@drawable/circle_grey_translucent">
+
+            <ImageView
+                android:id="@+id/btnBottomStop"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                android:scaleType="centerInside"
+                android:padding="16dp"
+                app:tint="@color/chat_text_primary" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/pauseOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#B3000000"
+        android:background="@color/pause_overlay_bg"
         android:visibility="gone"
         android:clickable="true"
         android:focusable="true"
-        android:elevation="20dp">
+        android:elevation="20dp"
+        tools:visibility="visible" >
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="已暫停\n再按一下即可開始對話"
-            android:textColor="#FFFFFF"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            android:lineSpacingExtra="15dp"
+            android:orientation="vertical"
             android:gravity="center"
-            android:layout_centerInParent="true" />
-    </RelativeLayout>
+            android:layout_centerInParent="true">
 
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:src="@drawable/ic_pause_circle"
+                android:layout_marginBottom="24dp"
+                app:tint="@color/md_theme_surface" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chat_pause_title"  android:textColor="@color/m3_pause_text_primary"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chat_pause_subtitle"  android:textColor="@color/m3_pause_text_secondary"
+                android:textSize="20sp"
+                android:layout_marginTop="12dp"
+                android:letterSpacing="0.05" />
+
+        </LinearLayout>
+    </RelativeLayout>
 </RelativeLayout>

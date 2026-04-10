@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="@color/black">
 
     <VideoView
         android:id="@+id/videoView"
@@ -25,41 +26,45 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:padding="30dp"
-        android:background="#990F172A"> <Button
-        android:id="@+id/btnTrainingVideo"
-        android:layout_width="0dp"
-        android:layout_height="100dp"
-        android:layout_weight="1"
-        android:layout_marginEnd="15dp"
-        android:text="衛教影片"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:backgroundTint="#E0F7FA"
-        android:textColor="#0F172A" />
+        android:background="@color/video_bottom_bar_bg"
+        android:visibility="gone" >
 
-        <Button
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTrainingVideo"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="16dp"
+            android:text="@string/btn_training_video"
+            android:textSize="28sp"
+            android:textColor="@color/md_theme_onPrimaryContainer"
+            app:backgroundTint="@color/md_theme_primaryContainer"
+            app:cornerRadius="16dp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStartChat"
+            style="@style/Widget.Material3.Button.ElevatedButton"
             android:layout_width="0dp"
             android:layout_height="100dp"
             android:layout_weight="1"
-            android:layout_marginEnd="15dp"
-            android:text="開始對話"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:backgroundTint="#00FFFF"
-            android:textColor="#0F172A" />
+            android:layout_marginEnd="16dp"
+            android:text="@string/btn_start_chat"
+            android:textSize="28sp"
+            android:textColor="@color/md_theme_onPrimary"
+            app:backgroundTint="@color/md_theme_primary"
+            app:cornerRadius="16dp" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnControl"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="0dp"
             android:layout_height="100dp"
             android:layout_weight="1"
-            android:text="控制中心"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:backgroundTint="#E0F7FA"
-            android:textColor="#0F172A" />
-
+            android:text="@string/btn_control"
+            android:textSize="28sp"
+            android:textColor="@color/md_theme_onPrimaryContainer"
+            app:backgroundTint="@color/md_theme_primaryContainer"
+            app:cornerRadius="16dp" />
     </LinearLayout>
-
 </RelativeLayout>

@@ -4,33 +4,33 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#F4F7F6">
+    android:background="@color/md_theme_background">
 
     <ProgressBar
         android:id="@+id/pbReturning"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:indeterminateTint="#FF7043"
-        android:layout_marginBottom="24dp" />
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:indeterminateTint="@color/md_theme_primary"
+        android:layout_marginBottom="32dp" />
 
     <TextView
         android:id="@+id/tvReturningTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="正在返回待機點..."
-        android:textSize="28sp"
-        android:textColor="#37474F"
+        android:text="@string/returning_title"
+        android:textSize="32sp"
+        android:textColor="@color/md_theme_onBackground"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvReturningSub"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="抵達待機點後\n自動跳轉至控車頁面"
-        android:textSize="16sp"
-        android:textColor="#78909C"
+        android:text="@string/returning_sub"
+        android:textSize="20sp"
+        android:textColor="@color/md_theme_onSurfaceVariant"
         android:gravity="center"
-        android:layout_marginTop="12dp"
-        android:lineSpacingExtra="4dp" />
+        android:layout_marginTop="16dp"
+        android:lineSpacingExtra="6dp" />
 
 </LinearLayout>

@@ -19,7 +19,7 @@ import java.io.IOException;
 public class AudioRecorderHelper {
     private static final String TAG = "AudioRecorderHelper";
 
-    // 錄音設定 (與原本 MainActivity 一致)
+    // 錄音設定 (維持標準 16k mono 16bit)
     private static final int SAMPLE_RATE = 16000;
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
@@ -32,7 +32,7 @@ public class AudioRecorderHelper {
 
     // 定義接口，讓 Activity 可以接收結果
     public interface AudioCallback {
-        void onVolumeChanged(double volumePercent); // 傳回 0.0 ~ 1.0 的音量百分比
+        void onVolumeChanged(double volumePercent); // 🌟 傳回 0.0 ~ 1.0 的音量百分比
         void onRecordingFinished(byte[] wavData);  // 傳回處理好的 WAV 位元組
     }
 
@@ -119,7 +119,7 @@ public class AudioRecorderHelper {
             sum += pcmShort * pcmShort;
         }
         double rms = Math.sqrt(sum / (readSize / 2.0));
-        // 映射原本邏輯: 30dB ~ 80dB -> 0.0 ~ 1.0
+        // 映射邏輯: 30dB ~ 80dB -> 0.0 ~ 1.0 (符合人類聽覺感受)
         double volumeDb = 20 * Math.log10(rms > 1 ? rms : 1);
         double volumePercent = Math.min(Math.max(volumeDb - 30, 0), 50) / 50.0;
 
@@ -127,14 +127,14 @@ public class AudioRecorderHelper {
     }
 
     /**
-     * 為 PCM 資料添加 WAV 標頭 (原本 MainActivity 的 addWavHeader 邏輯)
+     * 為 PCM 資料添加 WAV 標頭
      */
     private byte[] addWavHeader(byte[] pcmData) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
 
         int totalDataLen = pcmData.length + 36;
-        int byteRate = SAMPLE_RATE * 2; // 16-bit mono = sampleRate * (bitsPerSample/8) * channels
+        int byteRate = SAMPLE_RATE * 2; // mono 16bit
 
         dos.writeBytes("RIFF");
         dos.writeInt(Integer.reverseBytes(totalDataLen));

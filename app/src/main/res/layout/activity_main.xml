@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/viewFlipper"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/black">
 
-    <include layout="@layout/layout_video" />
+    <ViewFlipper
+        android:id="@+id/viewFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:inAnimation="@android:anim/fade_in"
+        android:outAnimation="@android:anim/fade_out">
 
-    <include layout="@layout/layout_control" />
+        <include layout="@layout/layout_video" />
 
-    <include layout="@layout/layout_chat" />
+        <include layout="@layout/layout_control" />
 
-    <include layout="@layout/layout_running" />
+        <include layout="@layout/layout_chat" />
 
-    <include layout="@layout/layout_returning" />
+        <include layout="@layout/layout_running" />
 
-</ViewFlipper>
+        <include layout="@layout/layout_returning" />
+
+    </ViewFlipper>
+</RelativeLayout>

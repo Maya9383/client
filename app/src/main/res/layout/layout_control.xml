@@ -3,18 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F8FF"
-    android:padding="20dp">
+    android:background="@color/md_theme_background"
+    android:padding="24dp">
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBackFromControl"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="〈 返回首頁"
-        android:textColor="#005C8A"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:padding="10dp"
+        android:text="@string/btn_back_home"
+        android:textColor="@color/md_theme_primary"
+        android:textSize="22sp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
@@ -22,11 +21,10 @@
         android:id="@+id/tvCountdown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
-        android:text="30s 後自動返航"
-        android:textColor="#FF3B30"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:layout_marginEnd="16dp"
+        android:text="@string/control_countdown"
+        android:textColor="@color/md_theme_error"
+        android:textSize="20sp"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@id/btnBackFromControl"
         app:layout_constraintBottom_toBottomOf="@id/btnBackFromControl"
@@ -36,110 +34,162 @@
         android:id="@+id/tvPageTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="請選擇機器人任務與目的地"
-        android:textColor="#333333"
-        android:textSize="32sp"
+        android:layout_marginTop="24dp"
+        android:text="@string/control_title"
+        android:textColor="@color/md_theme_onBackground"
+        android:textSize="36sp"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/btnBackFromControl"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardTaskType"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="40dp"
         android:layout_marginBottom="40dp"
-        android:orientation="horizontal"
-        android:weightSum="1"
+        android:layout_marginEnd="12dp"
+        app:cardBackgroundColor="@color/md_theme_surface"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp"
+        app:layout_constraintHorizontal_weight="0.4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/cardDestination"
         app:layout_constraintTop_toBottomOf="@id/tvPageTitle"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.4"
-            android:orientation="vertical"
-            android:gravity="top|center_horizontal"
-            android:padding="20dp"
-            android:layout_marginEnd="10dp"
-            android:backgroundTint="#F4F7F6"
-            android:elevation="4dp"
-            android:background="@drawable/card_technology_style"> <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="任務種類"
-            android:textColor="#005C8A"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="50dp"/>
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btnCharge"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:text="⚡ 返回充電"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#2196F3"
-                android:layout_gravity="center_vertical" />
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="top|center_horizontal"
+                android:padding="32dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/control_task_type"
+                    android:textColor="@color/md_theme_primary"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="40dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCharge"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:text="@string/btn_charge"
+                    android:textSize="28sp"
+                    android:textColor="@color/md_theme_onPrimaryContainer"
+                    app:backgroundTint="@color/md_theme_primaryContainer"
+                    app:cornerRadius="20dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:background="@color/theme_card_accent_blue" />
+
         </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardDestination"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+        android:layout_marginStart="12dp"
+        app:cardBackgroundColor="@color/md_theme_surface"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp"
+        app:layout_constraintHorizontal_weight="0.6"
+        app:layout_constraintStart_toEndOf="@id/cardTaskType"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvPageTitle"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.6"
-            android:orientation="vertical"
-            android:gravity="top|center_horizontal"
-            android:padding="20dp"
-            android:layout_marginStart="10dp"
-            android:backgroundTint="#FFFFFF"
-            android:elevation="4dp"
-            android:background="@drawable/card_technology_style">
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="前往目的地"
-                android:textColor="#333333"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="30dp"/>
-
-            <Button
-                android:id="@+id/btnDestLobby"
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:text="大廳"
-                android:textSize="24sp"
-                android:layout_marginBottom="20dp"
-                android:backgroundTint="#FFFFFF"
-                android:textColor="#333333"
-                android:elevation="2dp"/>
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fillViewport="true"
+                android:scrollbars="none">
 
-            <Button
-                android:id="@+id/btnDestWashroom"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:text="洗手間"
-                android:textSize="24sp"
-                android:layout_marginBottom="20dp"
-                android:backgroundTint="#FFFFFF"
-                android:textColor="#333333"
-                android:elevation="2dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="top|center_horizontal"
+                    android:padding="32dp">
 
-            <Button
-                android:id="@+id/btnDestStandby"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/control_destination"
+                        android:textColor="@color/md_theme_onSurface"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="40dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDestLobby"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="90dp"
+                        android:text="@string/btn_dest_lobby"
+                        android:textSize="26sp"
+                        android:layout_marginBottom="24dp"
+                        android:textColor="@color/md_theme_onSurfaceVariant"
+                        app:backgroundTint="@color/md_theme_surfaceVariant"
+                        app:cornerRadius="16dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDestWashroom"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="90dp"
+                        android:text="@string/btn_dest_washroom"
+                        android:textSize="26sp"
+                        android:layout_marginBottom="24dp"
+                        android:textColor="@color/md_theme_onSurfaceVariant"
+                        app:backgroundTint="@color/md_theme_surfaceVariant"
+                        app:cornerRadius="16dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDestStandby"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="90dp"
+                        android:text="@string/btn_dest_standby"
+                        android:textSize="26sp"
+                        android:textColor="@color/md_theme_onSurfaceVariant"
+                        app:backgroundTint="@color/md_theme_surfaceVariant"
+                        app:cornerRadius="16dp" />
+                </LinearLayout>
+            </ScrollView>
+
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:text="待機點"
-                android:backgroundTint="#FFFFFF"
-                android:textColor="#333333"
-                android:textSize="24sp"
-                android:elevation="2dp"/>
+                android:layout_height="16dp"
+                android:background="@color/theme_card_accent_green" />
 
         </LinearLayout>
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

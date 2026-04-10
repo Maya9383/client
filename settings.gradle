@@ -20,6 +20,11 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+    versionCatalogs {
+        catlog {
+            from files('gradle/catlog.versions.toml')
+        }
+    }
 }
 
 rootProject.name = "server"
