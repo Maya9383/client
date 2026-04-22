@@ -19,7 +19,6 @@ import java.io.IOException;
 public class AudioRecorderHelper {
     private static final String TAG = "AudioRecorderHelper";
 
-    // 錄音設定 (維持標準 16k mono 16bit)
     private static final int SAMPLE_RATE = 16000;
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
@@ -30,10 +29,9 @@ public class AudioRecorderHelper {
     private AudioRecord audioRecord;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    // 定義接口，讓 Activity 可以接收結果
     public interface AudioCallback {
-        void onVolumeChanged(double volumePercent); // 🌟 傳回 0.0 ~ 1.0 的音量百分比
-        void onRecordingFinished(byte[] wavData);  // 傳回處理好的 WAV 位元組
+        void onVolumeChanged(double volumePercent);
+        void onRecordingFinished(byte[] wavData);
     }
 
     public AudioRecorderHelper(Context context, AudioCallback callback) {
@@ -45,73 +43,88 @@ public class AudioRecorderHelper {
         return isRecording;
     }
 
-    /**
-     * 開始錄音
-     * @param durationMs 錄音持續時間 (毫秒)
-     */
     public void startRecording(int durationMs) {
-        if (isRecording) return;
+        Log.i(TAG, "🎙️ 收到錄音請求，預計錄製 " + durationMs + " 毫秒...");
 
-        // 檢查權限
+        if (isRecording) {
+            Log.d(TAG, "⚠️ 目前已經在錄音中，忽略重複的錄音請求。");
+            return;
+        }
+
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            Log.e(TAG, "無錄音權限");
+            Log.e(TAG, "❌ 錄音失敗: 麥克風權限未開啟！");
             return;
         }
 
         isRecording = true;
+
         new Thread(() -> {
             try {
+                Log.d(TAG, "⚙️ 嘗試初始化 AudioRecord 硬體...");
                 int minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT);
                 audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, minBufferSize);
 
+                // 🌟 這裡是最容易因為衝突而報錯的地方
+                if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+                    Log.e(TAG, "❌ AudioRecord 初始化失敗！(麥克風極可能正被其他程式或系統喚醒服務佔用中)");
+                    isRecording = false;
+                    return;
+                }
+
+                Log.i(TAG, "🔴 錄音硬體啟動成功，開始擷取聲音資料...");
                 audioRecord.startRecording();
-                Log.d(TAG, "開始錄製 PCM...");
 
                 ByteArrayOutputStream pcmStream = new ByteArrayOutputStream();
                 byte[] buffer = new byte[minBufferSize];
                 long startTime = System.currentTimeMillis();
 
-                // 錄音迴圈
+                // 錄音迴圈 (為了不洗版，這裡不印 Log，靠 UI 更新即可)
                 while (isRecording && (System.currentTimeMillis() - startTime < durationMs)) {
                     int read = audioRecord.read(buffer, 0, buffer.length);
                     if (read > 0) {
                         pcmStream.write(buffer, 0, read);
-                        calculateVolume(buffer, read); // 計算音量
+                        calculateVolume(buffer, read);
                     }
                 }
 
-                // 結束錄製
+                Log.i(TAG, "⏹️ 錄音時間到達或被主動中斷，準備停止硬體擷取...");
                 stopAndRelease();
 
-                // 轉換為 WAV 並回傳
                 byte[] pcmData = pcmStream.toByteArray();
                 byte[] wavData = addWavHeader(pcmData);
 
+                Log.i(TAG, "📦 錄音結束，成功打包 WAV 音訊資料，大小: " + wavData.length + " bytes，準備回傳給 Server");
                 mainHandler.post(() -> callback.onRecordingFinished(wavData));
 
             } catch (Exception e) {
-                Log.e(TAG, "錄音執行緒錯誤: " + e.getMessage());
+                Log.e(TAG, "❌ 錄音過程中發生例外錯誤", e);
                 isRecording = false;
             }
         }).start();
     }
 
     public void stopRecording() {
-        isRecording = false;
+        if (isRecording) {
+            Log.i(TAG, "🛑 收到強制停止錄音指令");
+            isRecording = false; // 這會讓 Thread 裡的 while 迴圈自動結束
+        }
     }
 
     private void stopAndRelease() {
         isRecording = false;
         if (audioRecord != null) {
-            audioRecord.stop();
-            audioRecord.release();
-            audioRecord = null;
+            try {
+                Log.d(TAG, "🧹 釋放 AudioRecord 麥克風硬體資源...");
+                audioRecord.stop();
+                audioRecord.release();
+            } catch (Exception e) {
+                Log.e(TAG, "❌ 釋放麥克風資源時發生錯誤", e);
+            } finally {
+                audioRecord = null;
+            }
         }
     }
 
-    /**
-     * 計算音量分貝並映射為百分比
-     */
     private void calculateVolume(byte[] buffer, int readSize) {
         long sum = 0;
         for (int i = 0; i < readSize / 2; i++) {
@@ -119,34 +132,30 @@ public class AudioRecorderHelper {
             sum += pcmShort * pcmShort;
         }
         double rms = Math.sqrt(sum / (readSize / 2.0));
-        // 映射邏輯: 30dB ~ 80dB -> 0.0 ~ 1.0 (符合人類聽覺感受)
         double volumeDb = 20 * Math.log10(rms > 1 ? rms : 1);
         double volumePercent = Math.min(Math.max(volumeDb - 30, 0), 50) / 50.0;
 
         mainHandler.post(() -> callback.onVolumeChanged(volumePercent));
     }
 
-    /**
-     * 為 PCM 資料添加 WAV 標頭
-     */
     private byte[] addWavHeader(byte[] pcmData) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
 
         int totalDataLen = pcmData.length + 36;
-        int byteRate = SAMPLE_RATE * 2; // mono 16bit
+        int byteRate = SAMPLE_RATE * 2;
 
         dos.writeBytes("RIFF");
         dos.writeInt(Integer.reverseBytes(totalDataLen));
         dos.writeBytes("WAVE");
         dos.writeBytes("fmt ");
         dos.writeInt(Integer.reverseBytes(16));
-        dos.writeShort(Short.reverseBytes((short) 1)); // PCM
-        dos.writeShort(Short.reverseBytes((short) 1)); // Mono
+        dos.writeShort(Short.reverseBytes((short) 1));
+        dos.writeShort(Short.reverseBytes((short) 1));
         dos.writeInt(Integer.reverseBytes(SAMPLE_RATE));
         dos.writeInt(Integer.reverseBytes(byteRate));
-        dos.writeShort(Short.reverseBytes((short) 2)); // Block align
-        dos.writeShort(Short.reverseBytes((short) 16)); // Bits per sample
+        dos.writeShort(Short.reverseBytes((short) 2));
+        dos.writeShort(Short.reverseBytes((short) 16));
         dos.writeBytes("data");
         dos.writeInt(Integer.reverseBytes(pcmData.length));
         dos.write(pcmData);

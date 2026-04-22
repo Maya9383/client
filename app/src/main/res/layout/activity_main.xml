@@ -21,5 +21,7 @@
 
         <include layout="@layout/layout_returning" />
 
+        <include layout="@layout/layout_broadcast_overlay" />
+
     </ViewFlipper>
 </RelativeLayout>

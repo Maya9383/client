@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.VideoView;
 import android.widget.ViewFlipper;
 
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -27,7 +28,9 @@ import com.example.server.manager.VoiceManager;
 import com.example.server.manager.ChatWebSocketManager;
 import com.example.server.manager.LlmAudioPlayer;
 import com.example.server.utils.AudioRecorderHelper;
-import com.google.android.material.card.MaterialCardView;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     private ViewFlipper viewFlipper;
@@ -37,12 +40,15 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvCountdown;
     private LinearLayout bottomButtonContainer;
     private View pauseOverlay;
+    // 🌟 1. 新增廣播用的 UI 變數
+    private View layoutBroadcastOverlay;
+    private TextView tvBroadcastContent;
 
-    private final String serverIp = "192.168.0.110";
+    // 🌟 確保這裡是新主機的 IP
+    private final String serverIp = "192.168.0.25";
     private final String serverPort = "8000";
     private final String ROBOT_ID = "pennybot-a7fe96";
 
-    // 🌟 新增：用來儲存當前任務的 ID，用於後續的取消動作
     private String currentMissionId = "";
 
     private RobotManager robotManager;
@@ -58,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
     private Runnable statusPollingRunnable;
     private Runnable hideControlsRunnable;
 
-    // 🌟 新增：一個專門用來「延遲啟動輪詢」的 Runnable，避免讀到上一次的舊狀態
     private final Runnable delayedPollingRunnable = this::startStatusPolling;
 
     private final int PAGE_IDLE = 0;
@@ -70,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i("MainActivity", "🚀 系統啟動，準備初始化元件...");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         hideSystemUI();
         setContentView(R.layout.activity_main);
@@ -90,40 +96,97 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    // 新增：重置對話邏輯 (停止播放、停止收音，並重啟連接與收音)
+
+    // 🌟 動態生成目的地按鈕
+    private void loadDynamicDestinations() {
+        robotManager.fetchDestinations(destinations -> {
+            if (destinations == null || destinations.length() == 0) {
+                Log.w("MainActivity", "⚠️ 抓取失敗，3秒後自動重試...");
+                // 🌟 3秒後重新呼叫自己
+                logicHandler.postDelayed(this::loadDynamicDestinations, 3000);
+                return;
+            }
+            LinearLayout container = findViewById(R.id.llDestinationsContainer);
+            if (container == null) return;
+
+            // 清除除了標題 (TextView) 以外的舊按鈕
+            int childCount = container.getChildCount();
+            for (int i = childCount - 1; i >= 1; i--) {
+                container.removeViewAt(i);
+            }
+
+            if (destinations == null || destinations.length() == 0) {
+                Log.w("MainActivity", "⚠️ 無法取得動態點位或點位為空");
+                return;
+            }
+
+            // 準備轉換 dp 到 pixel 以設定按鈕尺寸
+            int heightPx = (int) android.util.TypedValue.applyDimension(
+                    android.util.TypedValue.COMPLEX_UNIT_DIP, 90, getResources().getDisplayMetrics());
+            int marginPx = (int) android.util.TypedValue.applyDimension(
+                    android.util.TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+
+            for (int i = 0; i < destinations.length(); i++) {
+                try {
+                    JSONObject dest = destinations.getJSONObject(i);
+                    String name = dest.optString("name", "未知點位");
+                    String id = dest.optString("id", "");
+
+                    com.google.android.material.button.MaterialButton btn = new com.google.android.material.button.MaterialButton(
+                            this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT, heightPx);
+                    params.bottomMargin = marginPx;
+                    btn.setLayoutParams(params);
+
+                    btn.setText(name);
+                    btn.setTextSize(26f);
+                    btn.setCornerRadius(45); // 讓按鈕圓角
+
+                    // 設定按鈕顏色 (套用你的主題色)
+                    btn.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onSurfaceVariant));
+                    btn.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.md_theme_surfaceVariant));
+
+                    // 🌟 設定點擊事件，同時傳入 ID (給機器人) 和 Name (給畫面的提示文字)
+                    btn.setOnClickListener(v -> sendNewMission(id, name, false));
+
+                    container.addView(btn);
+
+                } catch (Exception e) {
+                    Log.e("MainActivity", "❌ 動態生成按鈕失敗", e);
+                }
+            }
+        });
+    }
     private void resetConversation() {
-        // 停止正在播放的語音
+        Log.i("MainActivity", "🔄 使用者手動重置對話");
         if (audioPlayer != null) audioPlayer.stopAll();
-        // 停止當前的錄音
         if (recorderHelper != null) recorderHelper.stopRecording();
         stopVisualizerUI(false);
 
-        // 斷開並重新連接 WebSocket 以清空伺服器端的上下文 (依據你的後端實作而定)
         if (wsManager != null) {
             wsManager.disconnect();
             wsManager.connect();
         }
-
-        // 重新開始收音
         startChatRecording(true);
     }
 
-    // 新增：切換對話暫停 / 繼續狀態
     private void toggleChatPause() {
         isChatPaused = !isChatPaused;
+        Log.i("MainActivity", "⏸️ 聊天暫停狀態切換: " + isChatPaused);
 
         if (isChatPaused) {
-            // 進入暫停：顯示遮罩、停止播放與收音
             if (pauseOverlay != null) pauseOverlay.setVisibility(View.VISIBLE);
             if (audioPlayer != null) audioPlayer.stopAll();
             if (recorderHelper != null) recorderHelper.stopRecording();
             stopVisualizerUI(false);
         } else {
-            // 恢復繼續：隱藏遮罩、重新開始收音
             if (pauseOverlay != null) pauseOverlay.setVisibility(View.GONE);
             startChatRecording(true);
         }
     }
+
     private void initUI() {
         viewFlipper = findViewById(R.id.viewFlipper);
         videoView = findViewById(R.id.videoView);
@@ -133,43 +196,31 @@ public class MainActivity extends AppCompatActivity {
         bottomButtonContainer = findViewById(R.id.bottomButtonContainer);
         pauseOverlay = findViewById(R.id.pauseOverlay);
 
+        layoutBroadcastOverlay = findViewById(R.id.layoutBroadcastOverlay);
+        tvBroadcastContent = findViewById(R.id.tvBroadcastContent);
+
         videoView.setOnCompletionListener(mp -> {
             if (viewFlipper.getDisplayedChild() == PAGE_IDLE) robotManager.playNextPromoVideo(videoView, () -> true);
         });
 
         findViewById(R.id.btnControl).setOnClickListener(v -> switchPage(PAGE_CONTROL));
         findViewById(R.id.btnStartChat).setOnClickListener(v -> openChatPage(false));
-        findViewById(R.id.btnDestLobby).setOnClickListener(v -> sendNewMission("T1", false));
-        findViewById(R.id.btnDestStandby).setOnClickListener(v -> sendNewMission("T2", false));
         findViewById(R.id.btnCharge).setOnClickListener(v -> performCharge());
         findViewById(R.id.btnBackFromControl).setOnClickListener(v -> { resetControlLogic(); switchPage(PAGE_IDLE); });
-
-        // 🌟 修正：點擊取消按鈕時，呼叫 handleCancelAction() 並帶上儲存的 missionId
         findViewById(R.id.btnCancelMission).setOnClickListener(v -> handleCancelAction());
 
-        // ======== 新增：對話頁面 (Chat Page) 按鈕與互動邏輯 ========
-
-        // 1. 左上角返回首頁按鈕
         findViewById(R.id.btnBackFromChat).setOnClickListener(v -> closeChatPage());
-
-        // 2. 下方右側叉叉按鈕：終止對話 (行為同返回)
         findViewById(R.id.btnBottomStopCard).setOnClickListener(v -> closeChatPage());
-
-        // 3. 下方左側麥克風按鈕：停止輸出並重置對話
         findViewById(R.id.btnBottomMicCard).setOnClickListener(v -> resetConversation());
-
-        // 4. 點擊畫面空白處：暫停 / 繼續對話
         findViewById(R.id.chatRootLayout).setOnClickListener(v -> {
             if (viewFlipper.getDisplayedChild() == PAGE_CHAT) toggleChatPause();
         });
 
-        // 點擊暫停遮罩層：恢復對話
         if (pauseOverlay != null) {
             pauseOverlay.setOnClickListener(v -> {
                 if (viewFlipper.getDisplayedChild() == PAGE_CHAT) toggleChatPause();
             });
         }
-        // =========================================================
 
         findViewById(R.id.videoClickLayer).setOnClickListener(v -> {
             if (bottomButtonContainer != null) {
@@ -186,20 +237,51 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void sendNewMission(String d, boolean isAutoReturn) {
+    public void showBroadcastUI(String text) {
+        Log.i("MainActivity", "📢 收到指令，強制顯示廣播畫面，文字內容: " + text);
+        runOnUiThread(() -> {
+            if (layoutBroadcastOverlay != null) {
+                tvBroadcastContent.setText(text);
+                layoutBroadcastOverlay.setVisibility(View.VISIBLE);
+                layoutBroadcastOverlay.bringToFront();
+
+                if (videoView != null && videoView.isPlaying()) {
+                    Log.i("MainActivity", "⏸️ 已暫停背景影片播放，避免聲音干擾");
+                    videoView.pause();
+                }
+            } else {
+                Log.e("MainActivity", "❌ 錯誤：找不到廣播 UI 元件！");
+            }
+        });
+    }
+
+    public void hideBroadcastUI() {
+        Log.i("MainActivity", "✅ 廣播結束，準備隱藏廣播畫面");
+        runOnUiThread(() -> {
+            if (layoutBroadcastOverlay != null) {
+                layoutBroadcastOverlay.setVisibility(View.GONE);
+
+                if (videoView != null && viewFlipper.getDisplayedChild() == PAGE_IDLE) {
+                    Log.i("MainActivity", "▶️ 恢復背景影片播放");
+                    videoView.start();
+                }
+            }
+        });
+    }
+
+    // 🌟 參數多加一個 destName
+    private void sendNewMission(String destId, String destName, boolean isAutoReturn) {
         resetControlLogic();
-        robotManager.sendMission(d, missionId -> {
+        robotManager.sendMission(destId, missionId -> {
             this.currentMissionId = missionId;
             runOnUiThread(() -> {
                 if (isAutoReturn) {
                     tvRunningStatus.setText("超時未操作，自動返回中...");
                     switchPage(PAGE_RETURNING);
                 } else {
-                    tvRunningStatus.setText("機器人前往 " + d + " 中...");
+                    tvRunningStatus.setText("機器人前往 " + destName + " 中..."); // 畫面顯示中文
                     switchPage(PAGE_RUNNING);
                 }
-                // 🌟 修正：不要立刻呼叫 startStatusPolling()！
-                // 延遲 3 秒後再開始問狀態，讓伺服器有時間把狀態從上一次的 SUCCEEDED 切換成 RUNNING
                 logicHandler.postDelayed(delayedPollingRunnable, 3000);
             });
         });
@@ -225,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
             }
             public void onFinish() {
                 if (tvCountdown != null) tvCountdown.setVisibility(View.GONE);
-                sendNewMission("T2", true);
+                sendNewMission("DEST_ID_STANDBY", "待命點", true); // 🌟 請把前面的字串換成你們真實的充電站或待命點 ID
             }
         }.start();
     }
@@ -237,8 +319,6 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 robotManager.checkRobotStatus(state -> {
                     runOnUiThread(() -> {
-                        Log.d("RobotStatus", "目前底層狀態 (data.state): " + state);
-
                         if (state == null) {
                             logicHandler.postDelayed(statusPollingRunnable, 1000);
                             return;
@@ -247,35 +327,26 @@ public class MainActivity extends AppCompatActivity {
                         switch (state) {
                             case "STATE_SUCCEEDED":
                             case "STATE_IDLE":
-                                // 🌟 抵達目的：清空任務 ID、重置邏輯並回到首頁
                                 currentMissionId = "";
                                 resetControlLogic();
                                 switchPage(PAGE_IDLE);
                                 break;
-
                             case "STATE_RUNNING":
                             case "STATE_MOVING":
                             case "STATE_NAVIGATING":
-                                // 🌟 執行中：隔 3 秒再問一次，讓畫面停留在 running
                                 logicHandler.postDelayed(statusPollingRunnable, 3000);
                                 break;
-
                             case "STATE_CANCELED":
                             case "STATE_CANCELLED":
-                                // 🌟 任務取消：回到控制頁並啟動 30 秒倒數計時
                                 resetControlLogic();
                                 switchPage(PAGE_CONTROL);
                                 startWaitTimer();
                                 break;
-
                             case "STATE_FAILED":
-                                // 🌟 任務失敗
-                                Log.e("RobotStatus", "車子回報任務失敗！");
                                 currentMissionId = "";
                                 resetControlLogic();
                                 switchPage(PAGE_IDLE);
                                 break;
-
                             case "INITIALIZING":
                             case "STATE_PAUSED":
                             default:
@@ -295,7 +366,6 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 tvRunningStatus.setText("正在返回充電座...");
                 switchPage(PAGE_RUNNING);
-                // 🌟 修正：充電指令也一樣，給它 3 秒鐘更新狀態
                 logicHandler.postDelayed(delayedPollingRunnable, 3000);
             });
         });
@@ -312,7 +382,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopStatusPolling() {
-        // 🌟 修正：停止輪詢時，也要記得把「等待啟動的延遲任務」給取消掉，避免畫面切換時發生錯亂
         logicHandler.removeCallbacks(delayedPollingRunnable);
         if (statusPollingRunnable != null) {
             logicHandler.removeCallbacks(statusPollingRunnable);
@@ -320,19 +389,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void switchPage(int p) {
+        Log.i("MainActivity", "📺 切換畫面，目標分頁代號: " + p);
         if (viewFlipper != null) viewFlipper.setDisplayedChild(p);
-        if (p == PAGE_IDLE) { if (videoView != null && !videoView.isPlaying()) videoView.start(); }
-        else { if (videoView != null && videoView.isPlaying()) videoView.pause(); }
-        if (p != PAGE_CHAT) { if (voiceManager != null) voiceManager.startListeningWakeWord(); }
-        else { if (voiceManager != null) voiceManager.stopListening(); }
-    }
 
+        if (p == PAGE_IDLE) {
+            if (videoView != null && !videoView.isPlaying()) videoView.start();
+        } else {
+            if (videoView != null && videoView.isPlaying()) videoView.pause();
+        }
+
+        // 🌟 新增這裡：如果切換到控車頁面，就立刻去抓最新點位！
+        if (p == PAGE_CONTROL) {
+            loadDynamicDestinations();
+        }
+
+        // (下面的 voiceManager 已經被我們註解掉了，就保持現狀)
+    }
     private void initManagers() {
+        Log.i("MainActivity", "⚙️ 開始初始化各項背景服務 Manager...");
         robotManager = new RobotManager(this, serverIp, serverPort, ROBOT_ID);
+
         audioPlayer = new LlmAudioPlayer(this, () -> {
             if (viewFlipper.getDisplayedChild() == PAGE_CHAT && !isChatPaused) startChatRecording(false);
+
+            if (layoutBroadcastOverlay != null && layoutBroadcastOverlay.getVisibility() == View.VISIBLE) {
+                hideBroadcastUI();
+            }
         });
-        wsManager = new ChatWebSocketManager(serverIp, serverPort, ROBOT_ID, audioPlayer);
+
+        wsManager = new ChatWebSocketManager(serverIp, serverPort, ROBOT_ID, audioPlayer, this);
+
+        // 🌟 修正 1：一開機就建立 WebSocket 連線，讓平板在背景隨時待命接收廣播！
+        Log.i("MainActivity", "🔌 初始化 wsManager，並立刻發起 WebSocket 背景連線！");
+        wsManager.connect();
+
         recorderHelper = new AudioRecorderHelper(this, new AudioRecorderHelper.AudioCallback() {
             @Override public void onVolumeChanged(double v) { updateVisualizerUI(v); }
             @Override public void onRecordingFinished(byte[] data) {
@@ -340,23 +430,32 @@ public class MainActivity extends AppCompatActivity {
                 if (wsManager != null && !isChatPaused) wsManager.sendAudio(data);
             }
         });
+
         voiceManager = new VoiceManager(this, () -> runOnUiThread(() -> {
             if (viewFlipper.getDisplayedChild() != PAGE_CHAT) openChatPage(false);
         }));
-        voiceManager.startListeningWakeWord();
+        //voiceManager.startListeningWakeWord();
     }
 
     private void openChatPage(boolean playBeep) {
+        Log.i("MainActivity", "💬 進入對話模式");
         switchPage(PAGE_CHAT);
         isChatPaused = false;
         if (pauseOverlay != null) pauseOverlay.setVisibility(View.GONE);
+
+        // WebSocket 已經在背景連線了，這裡如果重複呼叫 connect() Manager 內部有防呆
         if (wsManager != null) wsManager.connect();
         startChatRecording(playBeep);
     }
 
     private void closeChatPage() {
+        Log.i("MainActivity", "🚪 離開對話模式，回到待機首頁");
         switchPage(PAGE_IDLE);
-        if (wsManager != null) wsManager.disconnect();
+
+        // 🌟 修正 2：絕對不能在這裡斷開 WebSocket！否則就收不到遠端巡防廣播了！
+        // if (wsManager != null) wsManager.disconnect();
+        Log.i("MainActivity", "🔌 保持 WebSocket 暢通，持續在背景監聽指令...");
+
         if (audioPlayer != null) audioPlayer.stopAll();
         if (recorderHelper != null) recorderHelper.stopRecording();
         stopVisualizerUI(false);
@@ -417,8 +516,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.i("MainActivity", "🛑 App 完全關閉，釋放所有硬體與連線資源");
         resetControlLogic();
         closeChatPage();
+
+        // 真正要關閉整個 App 的時候，才可以把 WebSocket 斷開
+        if (wsManager != null) wsManager.disconnect();
         if (voiceManager != null) voiceManager.stopListening();
     }
 }

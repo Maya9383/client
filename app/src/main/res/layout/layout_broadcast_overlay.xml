@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutBroadcastOverlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E6000000"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:visibility="gone"
+    tools:visibility="visible"
+    android:clickable="true"
+    android:focusable="true"
+    android:elevation="100dp">
+
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_mic"
+        app:tint="#FFFFFF"
+        android:contentDescription="廣播圖示" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="📢 站點公告廣播中"
+        tools:ignore="HardcodedText"
+        android:textColor="#FFFFFF"
+        android:textSize="36sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvBroadcastContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:textColor="#FFEB3B"
+        android:textSize="28sp"
+        android:textAlignment="center"
+        android:padding="20dp"
+        tools:text="這是一段廣播內容的排版測試！\n字會變成黃色，並且置中對齊。" />
+
+</LinearLayout>

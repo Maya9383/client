@@ -132,6 +132,7 @@
                 android:scrollbars="none">
 
                 <LinearLayout
+                    android:id="@+id/llDestinationsContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -147,40 +148,6 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="40dp"/>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDestLobby"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="90dp"
-                        android:text="@string/btn_dest_lobby"
-                        android:textSize="26sp"
-                        android:layout_marginBottom="24dp"
-                        android:textColor="@color/md_theme_onSurfaceVariant"
-                        app:backgroundTint="@color/md_theme_surfaceVariant"
-                        app:cornerRadius="16dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDestWashroom"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="90dp"
-                        android:text="@string/btn_dest_washroom"
-                        android:textSize="26sp"
-                        android:layout_marginBottom="24dp"
-                        android:textColor="@color/md_theme_onSurfaceVariant"
-                        app:backgroundTint="@color/md_theme_surfaceVariant"
-                        app:cornerRadius="16dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDestStandby"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="90dp"
-                        android:text="@string/btn_dest_standby"
-                        android:textSize="26sp"
-                        android:textColor="@color/md_theme_onSurfaceVariant"
-                        app:backgroundTint="@color/md_theme_surfaceVariant"
-                        app:cornerRadius="16dp" />
                 </LinearLayout>
             </ScrollView>
 
