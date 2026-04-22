@@ -11,12 +11,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 import android.widget.ViewFlipper;
-
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,9 +42,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvCountdown;
     private LinearLayout bottomButtonContainer;
     private View pauseOverlay;
-    // 🌟 1. 新增廣播用的 UI 變數
+
+    // 廣播用的 UI 變數
     private View layoutBroadcastOverlay;
     private TextView tvBroadcastContent;
+
+    // 🌟 新增：衛教網頁用的 WebView
+    private WebView educationWebView;
 
     // 🌟 確保這裡是新主機的 IP
     private final String serverIp = "192.168.0.25";
@@ -66,11 +72,14 @@ public class MainActivity extends AppCompatActivity {
 
     private final Runnable delayedPollingRunnable = this::startStatusPolling;
 
+    // 頁面索引常數
     private final int PAGE_IDLE = 0;
     private final int PAGE_CONTROL = 1;
     private final int PAGE_CHAT = 2;
     private final int PAGE_RUNNING = 3;
     private final int PAGE_RETURNING = 4;
+    private final int PAGE_BROADCAST = 5; // 假設你在 XML 中廣播頁面是第 6 個
+    private final int PAGE_EDUCATION = 6; // 🌟 衛教網頁頁面 (第 7 個)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +99,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 int currentPage = viewFlipper.getDisplayedChild();
-                if (currentPage == PAGE_CHAT) closeChatPage();
-                else if (currentPage == PAGE_CONTROL) { resetControlLogic(); switchPage(PAGE_IDLE); }
-                else if (currentPage != PAGE_RUNNING && currentPage != PAGE_RETURNING) finish();
+
+                if (currentPage == PAGE_CHAT) {
+                    closeChatPage();
+                } else if (currentPage == PAGE_CONTROL) {
+                    resetControlLogic();
+                    switchPage(PAGE_IDLE);
+                } else if (currentPage == PAGE_EDUCATION) {
+                    // 🌟 當使用者在看衛教影片時按下平板實體返回鍵
+                    if (educationWebView != null) {
+                        educationWebView.loadUrl("about:blank"); // 清空網頁，強制停止 YouTube 背景播放
+                    }
+                    switchPage(PAGE_IDLE); // 切換回首頁 (待機影片頁)
+                } else if (currentPage != PAGE_RUNNING && currentPage != PAGE_RETURNING) {
+                    finish();
+                }
             }
         });
     }
@@ -102,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
         robotManager.fetchDestinations(destinations -> {
             if (destinations == null || destinations.length() == 0) {
                 Log.w("MainActivity", "⚠️ 抓取失敗，3秒後自動重試...");
-                // 🌟 3秒後重新呼叫自己
                 logicHandler.postDelayed(this::loadDynamicDestinations, 3000);
                 return;
             }
@@ -142,13 +162,11 @@ public class MainActivity extends AppCompatActivity {
 
                     btn.setText(name);
                     btn.setTextSize(26f);
-                    btn.setCornerRadius(45); // 讓按鈕圓角
+                    btn.setCornerRadius(45);
 
-                    // 設定按鈕顏色 (套用你的主題色)
                     btn.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onSurfaceVariant));
                     btn.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.md_theme_surfaceVariant));
 
-                    // 🌟 設定點擊事件，同時傳入 ID (給機器人) 和 Name (給畫面的提示文字)
                     btn.setOnClickListener(v -> sendNewMission(id, name, false));
 
                     container.addView(btn);
@@ -159,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     private void resetConversation() {
         Log.i("MainActivity", "🔄 使用者手動重置對話");
         if (audioPlayer != null) audioPlayer.stopAll();
@@ -196,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
         bottomButtonContainer = findViewById(R.id.bottomButtonContainer);
         pauseOverlay = findViewById(R.id.pauseOverlay);
 
-        layoutBroadcastOverlay = findViewById(R.id.layoutBroadcastOverlay);
+        // 🌟 廣播用的文字變數 (layoutBroadcastOverlay 已經不需要在這裡綁定了，因為改用 ViewFlipper 切換)
         tvBroadcastContent = findViewById(R.id.tvBroadcastContent);
 
         videoView.setOnCompletionListener(mp -> {
@@ -212,9 +231,16 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnBackFromChat).setOnClickListener(v -> closeChatPage());
         findViewById(R.id.btnBottomStopCard).setOnClickListener(v -> closeChatPage());
         findViewById(R.id.btnBottomMicCard).setOnClickListener(v -> resetConversation());
-        findViewById(R.id.chatRootLayout).setOnClickListener(v -> {
-            if (viewFlipper.getDisplayedChild() == PAGE_CHAT) toggleChatPause();
-        });
+
+        // ✅ 修正：改用 page_chat，並加上防呆檢查
+        View chatPage = findViewById(R.id.page_chat);
+        if (chatPage != null) {
+            chatPage.setOnClickListener(v -> {
+                if (viewFlipper.getDisplayedChild() == PAGE_CHAT) toggleChatPause();
+            });
+        } else {
+            Log.e("MainActivity", "⚠️ 找不到 page_chat，請確認 activity_main.xml 中的 include 設定！");
+        }
 
         if (pauseOverlay != null) {
             pauseOverlay.setOnClickListener(v -> {
@@ -231,26 +257,77 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     bottomButtonContainer.setVisibility(View.VISIBLE);
                     bottomButtonContainer.animate().alpha(1f).setDuration(300).start();
+                    hideControlsRunnable = () -> bottomButtonContainer.setVisibility(View.GONE);
                     logicHandler.postDelayed(hideControlsRunnable, 5000);
                 }
             }
         });
+
+        // ==========================================
+        // 🌟 衛教網頁 WebView 綁定與「按鈕劫持」設定
+        // ==========================================
+        educationWebView = findViewById(R.id.educationWebView);
+        if (educationWebView != null) {
+            WebSettings webSettings = educationWebView.getSettings();
+            webSettings.setJavaScriptEnabled(true);
+            webSettings.setDomStorageEnabled(true);
+
+            // 1. 掛上溝通橋樑，暗號叫做 "RobotApp"
+            educationWebView.addJavascriptInterface(new WebAppInterface(), "RobotApp");
+
+            // 2. 設定 WebViewClient 來注入攔截程式
+            educationWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    super.onPageFinished(view, url);
+                    // 偷偷塞入 JavaScript，劫持「回上一頁」按鈕
+                    String injectJs = "javascript:(function() {" +
+                            "  var elements = document.querySelectorAll('a, button, div, span');" +
+                            "  for(var i=0; i<elements.length; i++) {" +
+                            "    if(elements[i].innerText && elements[i].innerText.includes('回上一頁')) {" +
+                            "      elements[i].onclick = function(event) {" +
+                            "        event.preventDefault();" +
+                            "        event.stopPropagation();" +
+                            "        RobotApp.closeWebPage();" +
+                            "      };" +
+                            "    }" +
+                            "  }" +
+                            "})()";
+                    view.loadUrl(injectJs);
+                }
+            });
+        }
+
+        // 綁定首頁的「衛教影片」按鈕
+        View btnTrainingVideo = findViewById(R.id.btnTrainingVideo);
+        if (btnTrainingVideo != null) {
+            btnTrainingVideo.setOnClickListener(v -> {
+                if (educationWebView != null) {
+                    // 載入慈濟多國語言衛教網址
+                    educationWebView.loadUrl("https://taipei.tzuchi.com.tw/ai智能小幫手-多國語言衛教影音測試/?openExternalBrowser=1");
+                }
+                switchPage(PAGE_EDUCATION); // 切換到衛教網頁畫面
+            });
+        }
     }
 
     public void showBroadcastUI(String text) {
         Log.i("MainActivity", "📢 收到指令，強制顯示廣播畫面，文字內容: " + text);
         runOnUiThread(() -> {
-            if (layoutBroadcastOverlay != null) {
+            // 1. 設定廣播文字 (這個 ID 是子元件，沒有被 include 蓋掉，所以抓得到)
+            if (tvBroadcastContent != null) {
                 tvBroadcastContent.setText(text);
-                layoutBroadcastOverlay.setVisibility(View.VISIBLE);
-                layoutBroadcastOverlay.bringToFront();
-
-                if (videoView != null && videoView.isPlaying()) {
-                    Log.i("MainActivity", "⏸️ 已暫停背景影片播放，避免聲音干擾");
-                    videoView.pause();
-                }
             } else {
-                Log.e("MainActivity", "❌ 錯誤：找不到廣播 UI 元件！");
+                Log.e("MainActivity", "⚠️ 找不到 tvBroadcastContent，請確認 XML 內的 ID");
+            }
+
+            // 2. 🌟 關鍵修改：直接叫 ViewFlipper 切換到廣播分頁 (PAGE_BROADCAST = 5)
+            switchPage(PAGE_BROADCAST);
+
+            // 3. 暫停待機影片，避免聲音跟廣播打架
+            if (videoView != null && videoView.isPlaying()) {
+                Log.i("MainActivity", "⏸️ 已暫停背景影片播放，避免聲音干擾");
+                videoView.pause();
             }
         });
     }
@@ -258,18 +335,13 @@ public class MainActivity extends AppCompatActivity {
     public void hideBroadcastUI() {
         Log.i("MainActivity", "✅ 廣播結束，準備隱藏廣播畫面");
         runOnUiThread(() -> {
-            if (layoutBroadcastOverlay != null) {
-                layoutBroadcastOverlay.setVisibility(View.GONE);
+            // 🌟 關鍵修改：直接叫 ViewFlipper 切回首頁待機畫面
+            switchPage(PAGE_IDLE);
 
-                if (videoView != null && viewFlipper.getDisplayedChild() == PAGE_IDLE) {
-                    Log.i("MainActivity", "▶️ 恢復背景影片播放");
-                    videoView.start();
-                }
-            }
+            // switchPage(PAGE_IDLE) 裡面已經有自動恢復播放影片的邏輯了，所以這裡不用多寫！
         });
     }
 
-    // 🌟 參數多加一個 destName
     private void sendNewMission(String destId, String destName, boolean isAutoReturn) {
         resetControlLogic();
         robotManager.sendMission(destId, missionId -> {
@@ -279,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
                     tvRunningStatus.setText("超時未操作，自動返回中...");
                     switchPage(PAGE_RETURNING);
                 } else {
-                    tvRunningStatus.setText("機器人前往 " + destName + " 中..."); // 畫面顯示中文
+                    tvRunningStatus.setText("機器人前往 " + destName + " 中...");
                     switchPage(PAGE_RUNNING);
                 }
                 logicHandler.postDelayed(delayedPollingRunnable, 3000);
@@ -307,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
             }
             public void onFinish() {
                 if (tvCountdown != null) tvCountdown.setVisibility(View.GONE);
-                sendNewMission("DEST_ID_STANDBY", "待命點", true); // 🌟 請把前面的字串換成你們真實的充電站或待命點 ID
+                sendNewMission("DEST_ID_STANDBY", "待命點", true);
             }
         }.start();
     }
@@ -398,13 +470,11 @@ public class MainActivity extends AppCompatActivity {
             if (videoView != null && videoView.isPlaying()) videoView.pause();
         }
 
-        // 🌟 新增這裡：如果切換到控車頁面，就立刻去抓最新點位！
         if (p == PAGE_CONTROL) {
             loadDynamicDestinations();
         }
-
-        // (下面的 voiceManager 已經被我們註解掉了，就保持現狀)
     }
+
     private void initManagers() {
         Log.i("MainActivity", "⚙️ 開始初始化各項背景服務 Manager...");
         robotManager = new RobotManager(this, serverIp, serverPort, ROBOT_ID);
@@ -412,14 +482,13 @@ public class MainActivity extends AppCompatActivity {
         audioPlayer = new LlmAudioPlayer(this, () -> {
             if (viewFlipper.getDisplayedChild() == PAGE_CHAT && !isChatPaused) startChatRecording(false);
 
-            if (layoutBroadcastOverlay != null && layoutBroadcastOverlay.getVisibility() == View.VISIBLE) {
+            // 🌟 修正：改用 ViewFlipper 的當前頁面來判斷廣播是不是講完了
+            if (viewFlipper.getDisplayedChild() == PAGE_BROADCAST) {
                 hideBroadcastUI();
             }
         });
 
         wsManager = new ChatWebSocketManager(serverIp, serverPort, ROBOT_ID, audioPlayer, this);
-
-        // 🌟 修正 1：一開機就建立 WebSocket 連線，讓平板在背景隨時待命接收廣播！
         Log.i("MainActivity", "🔌 初始化 wsManager，並立刻發起 WebSocket 背景連線！");
         wsManager.connect();
 
@@ -434,7 +503,6 @@ public class MainActivity extends AppCompatActivity {
         voiceManager = new VoiceManager(this, () -> runOnUiThread(() -> {
             if (viewFlipper.getDisplayedChild() != PAGE_CHAT) openChatPage(false);
         }));
-        //voiceManager.startListeningWakeWord();
     }
 
     private void openChatPage(boolean playBeep) {
@@ -443,7 +511,6 @@ public class MainActivity extends AppCompatActivity {
         isChatPaused = false;
         if (pauseOverlay != null) pauseOverlay.setVisibility(View.GONE);
 
-        // WebSocket 已經在背景連線了，這裡如果重複呼叫 connect() Manager 內部有防呆
         if (wsManager != null) wsManager.connect();
         startChatRecording(playBeep);
     }
@@ -452,8 +519,6 @@ public class MainActivity extends AppCompatActivity {
         Log.i("MainActivity", "🚪 離開對話模式，回到待機首頁");
         switchPage(PAGE_IDLE);
 
-        // 🌟 修正 2：絕對不能在這裡斷開 WebSocket！否則就收不到遠端巡防廣播了！
-        // if (wsManager != null) wsManager.disconnect();
         Log.i("MainActivity", "🔌 保持 WebSocket 暢通，持續在背景監聽指令...");
 
         if (audioPlayer != null) audioPlayer.stopAll();
@@ -520,8 +585,22 @@ public class MainActivity extends AppCompatActivity {
         resetControlLogic();
         closeChatPage();
 
-        // 真正要關閉整個 App 的時候，才可以把 WebSocket 斷開
         if (wsManager != null) wsManager.disconnect();
         if (voiceManager != null) voiceManager.stopListening();
+    }
+    // ==========================================
+    // 🌟 網頁與 Android 的溝通橋樑
+    // ==========================================
+    public class WebAppInterface {
+        @android.webkit.JavascriptInterface
+        public void closeWebPage() {
+            runOnUiThread(() -> {
+                Log.i("MainActivity", "🌐 攔截到網頁『回上一頁』按鈕，關閉網頁並回到首頁");
+                if (educationWebView != null) {
+                    educationWebView.loadUrl("about:blank"); // 清空網頁，避免背景繼續播影片
+                }
+                switchPage(PAGE_IDLE); // 切換回首頁
+            });
+        }
     }
 }

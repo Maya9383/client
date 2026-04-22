@@ -11,17 +11,19 @@
         android:inAnimation="@android:anim/fade_in"
         android:outAnimation="@android:anim/fade_out">
 
-        <include layout="@layout/layout_video" />
+        <include android:id="@+id/page_video" layout="@layout/layout_video" />
 
-        <include layout="@layout/layout_control" />
+        <include android:id="@+id/page_control" layout="@layout/layout_control" />
 
-        <include layout="@layout/layout_chat" />
+        <include android:id="@+id/page_chat" layout="@layout/layout_chat" />
 
-        <include layout="@layout/layout_running" />
+        <include android:id="@+id/page_running" layout="@layout/layout_running" />
 
-        <include layout="@layout/layout_returning" />
+        <include android:id="@+id/page_returning" layout="@layout/layout_returning" />
 
-        <include layout="@layout/layout_broadcast_overlay" />
+        <include android:id="@+id/page_broadcast" layout="@layout/layout_broadcast_overlay" />
+
+        <include android:id="@+id/page_education" layout="@layout/layout_education" />
 
     </ViewFlipper>
 </RelativeLayout>
